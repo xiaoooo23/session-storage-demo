@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Session Storage Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    #strings-container {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="login-page">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button id="login-btn">Login</button>
+    <p id="login-error" style="color: red;"></p>
+  </div>
+
+  <!-- Main Page -->
+  <div id="main-page" class="hidden">
+    <h2>Welcome!</h2>
+    <input type="text" id="user-input" placeholder="Enter a string"><br>
+    <button id="submit-btn">Submit</button>
+    <button id="logout-btn">Logout</button>
+    <div id="strings-container"></div>
+  </div>
+
+  <script>
+    // Predefined credentials
+    const validUsername = "user";
+    const validPassword = "pass";
+
+    // DOM elements
+    const loginPage = document.getElementById('login-page');
+    const mainPage = document.getElementById('main-page');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('login-btn');
+    const loginError = document.getElementById('login-error');
+    const userInput = document.getElementById('user-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const stringsContainer = document.getElementById('strings-container');
+
+    // Check session on page load
+    window.onload = function () {
+      const loggedInUser = sessionStorage.getItem('loggedInUser');
+      if (loggedInUser) {
+        showMainPage(loggedInUser);
+      }
+    };
+
+    // Login button click event
+    loginBtn.addEventListener('click', function () {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (username === validUsername && password === validPassword) {
+        sessionStorage.setItem('loggedInUser', username);
+        showMainPage(username);
+      } else {
+        loginError.textContent = "Invalid credentials. Please try again.";
+      }
+    });
+
+    // Logout button click event
+    logoutBtn.addEventListener('click', function () {
+      sessionStorage.removeItem('loggedInUser');
+      showLoginPage();
+    });
+
+    // Submit button click event
+    submitBtn.addEventListener('click', function () {
+      const inputString = userInput.value.trim();
+      if (inputString) {
+        saveString(inputString);
+        displayString(inputString);
+        userInput.value = ''; // Clear input
+      }
+    });
+
+    // Helper functions
+    function showMainPage(username) {
+      loginPage.classList.add('hidden');
+      mainPage.classList.remove('hidden');
+      loadStrings(username);
+    }
+
+    function showLoginPage() {
+      loginPage.classList.remove('hidden');
+      mainPage.classList.add('hidden');
+      usernameInput.value = '';
+      passwordInput.value = '';
+      loginError.textContent = '';
+    }
+
+    function saveString(string) {
+      const username = sessionStorage.getItem('loggedInUser');
+      if (!username) return;
+
+      let strings = JSON.parse(sessionStorage.getItem(`strings_${username}`)) || [];
+      strings.push(string);
+      sessionStorage.setItem(`strings_${username}`, JSON.stringify(strings));
+    }
+
+    function loadStrings(username) {
+      stringsContainer.innerHTML = '';
+      const strings = JSON.parse(sessionStorage.getItem(`strings_${username}`)) || [];
+      strings.forEach(displayString);
+    }
+
+    function displayString(string) {
+      const div = document.createElement('div');
+      div.textContent = string;
+      stringsContainer.appendChild(div);
+    }
+  </script>
+</body>
+</html>
